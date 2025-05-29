@@ -1,0 +1,75 @@
+---
+- name: Disassemble Keycloak + Static Site Stack
+  hosts: all
+  become: true
+  gather_facts: false
+
+  vars_files:
+    - vars/keycloak_vars.yml
+
+  tasks:
+    - name: Stop and remove Keycloak container
+      community.docker.docker_container:
+        name: keycloak
+        state: absent
+        force_kill: true
+        remove_volumes: true
+      ignore_errors: true
+
+    - name: Stop and remove NGINX container
+      community.docker.docker_container:
+        name: nginx-site
+        state: absent
+        force_kill: true
+        remove_volumes: true
+      ignore_errors: true
+
+    - name: Stop and remove PostgreSQL container
+      community.docker.docker_container:
+        name: postgres
+        state: absent
+        force_kill: true
+        remove_volumes: true
+      ignore_errors: true
+
+    - name: Remove Docker network
+      community.docker.docker_network:
+        name: app_net
+        state: absent
+      ignore_errors: true
+
+    - name: Remove Docker volume for nginx_pid
+      community.docker.docker_volume:
+        name: nginx_pid
+        state: absent
+      ignore_errors: true
+
+    - name: Remove static site directory
+      file:
+        path: /home/azureuser/site
+        state: absent
+      ignore_errors: true
+
+    - name: Remove NGINX config
+      file:
+        path: /home/azureuser/nginx-site.conf
+        state: absent
+      ignore_errors: true
+
+    - name: Remove Keycloak realm JSON from VM
+      file:
+        path: /home/{{ ansible_user }}/hylastix-realm.json
+        state: absent
+      ignore_errors: true
+
+    - name: Remove Postgres data directory
+      file:
+        path: /home/azureuser/postgres_data
+        state: absent
+      ignore_errors: true
+
+    - name: Remove Let's Encrypt certificates
+      file:
+        path: /etc/letsencrypt
+        state: absent
+      ignore_errors: true
