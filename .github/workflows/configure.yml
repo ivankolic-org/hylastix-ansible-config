@@ -1,0 +1,35 @@
+name: Configure VM with Ansible
+
+on:
+  workflow_dispatch:
+
+jobs:
+  configure-vm:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ansible sshpass
+
+    - name: Setup SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.TF_VM_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+
+        # Optional: If key is encrypted, create SSH agent with passphrase
+        eval "$(ssh-agent -s)"
+        echo "${{ secrets.TF_VM_SSH_PRIVATE_KEY_PASSWORD }}" | SSH_ASKPASS=/bin/echo ssh-add ~/.ssh/id_rsa
+
+    - name: Create Ansible inventory
+      run: |
+        echo "[web]" > inventory.ini
+        echo "${{ secrets.VM_DOMAIN_NAME }} ansible_user=${{ secrets.VM_USER }} ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
+
+    - name: Run Ansible Playbook
+      run: ansible-playbook -i inventory.ini ansible/playbook.yml
