@@ -22,14 +22,18 @@ jobs:
         echo "${{ secrets.TF_VM_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
 
-        # Optional: If key is encrypted, create SSH agent with passphrase
-        eval "$(ssh-agent -s)"
-        echo "${{ secrets.TF_VM_SSH_PRIVATE_KEY_PASSWORD }}" | SSH_ASKPASS=/bin/echo ssh-add ~/.ssh/id_rsa
+    - name: Disable SSH host key checking
+      run: |
+        echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null\n" >> ~/.ssh/config
 
     - name: Create Ansible inventory
       run: |
         echo "[web]" > inventory.ini
         echo "${{ secrets.VM_DOMAIN_NAME }} ansible_user=${{ secrets.VM_USER }} ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
+        cat inventory.ini
 
     - name: Run Ansible Playbook
+      env:
+        KEYCLOAK_ADMIN_PASSWORD: ${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       run: ansible-playbook -i inventory.ini ansible/playbook.yml

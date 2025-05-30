@@ -1,0 +1,4 @@
+oauth2_client_id: hylastix-site
+oauth2_cookie_secret: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters') }}"
+vm_public_url: "https://hylastix-test.westeurope.cloudapp.azure.com"
+vm_public_hostname: "hylastix-test.westeurope.cloudapp.azure.com"
