@@ -36,4 +36,5 @@ jobs:
       env:
         KEYCLOAK_ADMIN_PASSWORD: ${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
       run: ansible-playbook -i inventory.ini ansible/playbook.yml
